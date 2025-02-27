@@ -1,8 +1,9 @@
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { BsMoonStarsFill, BsFillSunFill } from "react-icons/bs";
-import { addTodo, toggleComplete } from "../../src/store/slice/todoSlice";
+import { addTodo, toggleComplete, updateTodo } from "../../src/store/slice/todoSlice";
+import { toggleTheme } from "../store/slice/themeSlice";
 import "../index.css";
 
 export const Route = createLazyFileRoute("/")({
@@ -13,7 +14,12 @@ function Index() {
 	const [text, setText] = useState("");
 	const [filter, setFilter] = useState("all"); //all
 	const todos = useSelector((state) => state.todos);
+	const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 	const dispatch = useDispatch();
+
+	useEffect(() => {
+		document.body.style.backgroundColor = isDarkMode ? "#1a202c" : "#ebf8ff";
+	}, [isDarkMode]);
 
 	//separate in different array
 	const completedTodos = todos.filter((todo) => todo.completed);
@@ -47,24 +53,53 @@ function Index() {
 		dispatch(toggleComplete(id));
 	};
 
+	const [editingId, setEditingId] = useState(null);
+	const [editText, setEditText] = useState("");
+
+	const handleEditClick = (id, text) => {
+		setEditingId(id);
+		setEditText(text);
+	};
+
+	const handleUpdateTodo = (id) => {
+		if (editText.trim()) {
+			dispatch(updateTodo({ id, text: editText }));
+			setEditingId(null);
+		}
+	};
+
 	return (
 		<>
 			<div id="darkmode" className="flex justify-end mr-[50px] font-bold text-3xl">
-				<div className="mr-[700px] font-poppins">
+				<div className={`mr-[700px] font-poppins  ${
+						isDarkMode ? "text-white" : "text-black"
+					}`}>
 					<h1>TODO-LIST</h1>
 				</div>
-				<input type="checkbox" className="checkbox opacity-0 absolute" id="checkbox" />
+				<input
+					type="checkbox"
+					checked={isDarkMode}
+					onChange={() => dispatch(toggleTheme())}
+					className="checkbox opacity-0 absolute"
+					id="checkbox"
+				/>
 				<label
 					htmlFor="checkbox"
-					className="label w-[49px] h-[24px] bg-black flex border m-2 rounded-2xl items-center justify-between p-1 relative cursor-pointer"
+					className={`label w-[49px] h-[24px] flex border m-2 rounded-2xl items-center justify-between p-1 relative cursor-pointer ${
+						isDarkMode ? "bg-gray-800" : "bg-black"
+					}`}
 				>
 					<BsMoonStarsFill color="white" />
 					<BsFillSunFill color="yellow" />
-					<div className="ball w-[22px] h-[22px] bg-white absolute top-0 left-0.5 border rounded-3xl"></div>
+					<div className="ball w-[22px] h-[22px] bg-white absolute top-0 border rounded-3xl left-0.5 "></div>
 				</label>
 			</div>
 			<div>
-				<div className="max-w-[485px] m-[15px_auto] bg-white rounded-[7px] p-[25px_0] shadow-2xl">
+				<div
+					className={`max-w-[485px] m-[15px_auto] rounded-[7px] p-[25px_0] shadow-2xl ${
+						isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
+					}`}
+				>
 					<div className="h-[52px] p-[0_25px] relative">
 						<input
 							type="text"
@@ -117,7 +152,16 @@ function Index() {
 							>
 								<div className="flex items-center gap-2">
 									{todo.completed && <span className="text-green-500">✅</span>}
-									<span>{todo.text}</span>
+									{editingId === todo.id ? (
+										<input
+											type="text"
+											value={editText}
+											onChange={(e) => setEditText(e.target.value)}
+											className="px-2 m-2"
+										/>
+									) : (
+										<span>{todo.text}</span>
+									)}
 								</div>
 								<div className="flex gap-2">
 									<button
@@ -126,6 +170,21 @@ function Index() {
 									>
 										{todo.completed ? "Mark Incomplete" : "Mark Complete"}
 									</button>
+									{editingId === todo.id ? (
+										<button
+											onClick={() => handleUpdateTodo(todo.id)}
+											className="text-blue-500"
+										>
+											Save
+										</button>
+									) : (
+										<span
+											className="material-symbols-outlined cursor-pointer"
+											onClick={() => handleEditClick(todo.id, todo.text)}
+										>
+											edit
+										</span>
+									)}
 								</div>
 							</li>
 						))}
