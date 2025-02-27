@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { BsMoonStarsFill, BsFillSunFill } from "react-icons/bs";
 import { addTodo, toggleComplete, updateTodo } from "../../src/store/slice/todoSlice";
 import { toggleTheme } from "../store/slice/themeSlice";
+//import { BorderTrail } from '@/components/ui/border-trail';
 import "../index.css";
 
 export const Route = createLazyFileRoute("/")({
@@ -94,12 +95,15 @@ function Index() {
 					<div className="ball w-[22px] h-[22px] bg-white absolute top-0 border rounded-3xl left-0.5 "></div>
 				</label>
 			</div>
+	
 			<div>
+				
 				<div
 					className={`max-w-[485px] m-[15px_auto] rounded-[7px] p-[25px_0] shadow-2xl ${
 						isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
 					}`}
 				>
+					
 					<div className="h-[52px] p-[0_25px] relative">
 						<input
 							type="text"
